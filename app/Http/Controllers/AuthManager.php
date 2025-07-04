@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+
 class AuthManager extends Controller
 {
     function login()
@@ -22,7 +23,7 @@ class AuthManager extends Controller
 
         $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials)) {
-           return redirect()->route('task.add')->with('success', 'Login successful');
+           return redirect()->route('dashboard')->with('success', 'Login successful');
 
         }
 
@@ -45,7 +46,7 @@ class AuthManager extends Controller
         $user = new \App\Models\User();
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->password = $request->password; // consider hashing this, e.g., Hash::make($request->password)
+        $user->password = $request->password; 
 
         if ($user->save()) {
             Auth::login($user);
@@ -54,5 +55,12 @@ class AuthManager extends Controller
         }
 
         return redirect(route('login'))->with('success', 'Registration successful, please login');
+    }
+    public function destroy(Request $request)
+    {
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
+        return redirect()->route('home')->with('success', 'Logged out successfully');
     }
 }

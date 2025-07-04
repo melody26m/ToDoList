@@ -3,25 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Task;
-use App\Models\Suggestion;
 
 class TaskManager extends Controller
 {
-    // 📋 Display a list of all tasks (Dashboard)
     public function listTask()
     {
-        $tasks = Task::latest()->get(); // Most recent tasks first
+        $tasks = Task::where('user_id', Auth::id())
+                     ->latest()
+                     ->paginate(1000000); 
         return view("tasks.dashboard", compact("tasks"));
     }
 
-    // ➕ Display the "Add Task" form
     public function addTask()
     {
         return view('tasks.add');
     }
 
-    // 💾 Store a new task
     public function addTaskPost(Request $request)
     {
         $request->validate([
@@ -30,55 +29,33 @@ class TaskManager extends Controller
             'deadline' => 'required|date',
         ]);
 
-        $task = Task::create([
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'deadline' => $request->input('deadline'),
+        Task::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'deadline' => $request->deadline,
+            'user_id' => Auth::id(), 
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Task added successfully!');
     }
 
-    // ✅ Mark a task as completed
-    public function updateTaskstatus(Task $task)
-    {
-        $task->update(['status' => 'completed']);
+    
 
-        return redirect()->route("dashboard")->with('success', 'Task marked as completed!');
-    }
-
-    // 🔍 Show a specific task with its suggestions
-    public function show(Task $task)
-    {
-        $suggestions = $task->suggestions()->latest()->get();
-        return view('tasks.welcome', compact('task', 'suggestions'));
-    }
-
-    // 💬 Store a suggestion for a specific task
-    public function addSuggestion(Request $request, Task $task)
-    {
-        $request->validate([
-            'content' => 'required|string|max:255',
-            'author' => 'nullable|string|max:100',
-        ]);
-
-        $task->suggestions()->create([
-            'content' => $request->input('content'),
-            'author' => $request->input('author'),
-        ]);
-
-        return redirect()->route('task.show', $task->id)->with('success', 'Suggestion added successfully!');
-    }
-
-    // ✏️ Show edit form for a task
     public function editTask(Task $task)
     {
+        if ($task->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return view('tasks.edit', compact('task'));
     }
 
-    // 💾 Update task info
     public function updateTask(Request $request, Task $task)
     {
+        if ($task->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -88,13 +65,33 @@ class TaskManager extends Controller
         $task->update($request->only(['title', 'description', 'deadline']));
 
         return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
-
     }
 
     public function deleteTask(Task $task)
-{
-    $task->delete();
-    return redirect()->route('dashboard')->with('success', 'Task deleted successfully.');
-}
+    {
+        if ($task->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
 
+        $task->delete();
+        return redirect()->route('dashboard')->with('success', 'Task deleted successfully.');
+    }
+
+    public function toggleStatus($id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $task = Task::findOrFail($id);
+
+        if ($task->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $task->status = $task->status === 'completed' ? 'pending' : 'completed';
+        $task->save();
+
+        return back()->with('success', 'Task status updated!');
+    }
 }

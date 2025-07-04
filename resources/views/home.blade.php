@@ -23,13 +23,13 @@
         h1 {
             font-size: 3rem;
             margin-bottom: 10px;
-            color: #2c3e50;
+            color:black;
         }
 
         h2 {
             font-size: 1.5rem;
             margin-bottom: 20px;
-            color:rgb(94, 52, 77);
+            color: green;
         }
 
         a.button {
@@ -43,7 +43,7 @@
         }
 
         a.button:hover {
-            background-color: antiqueblue;
+            background-color: orangered;
         }
     </style>
 </head>

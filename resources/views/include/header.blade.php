@@ -35,12 +35,12 @@
         </li>
       </ul>
       <!-- Updated this part to use an <a> styled as button for routing -->
-      <a class="btn btn-outline-success" href="{{ route('task.add') }}">Add Task</a>
+     
        
       
     </div>
   </div>
 </nav>
 
-<!-- Include Bootstrap 5.3 JS (with Popper) -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

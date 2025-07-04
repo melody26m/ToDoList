@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthManager;
 use App\Http\Controllers\TaskManager;
+use App\Http\Controllers\AuthenticatedSessionController;
 
-// 🚪 Public Routes
+
 Route::get('/', function () {
     return view('home');
 })->name('home');
@@ -15,10 +16,10 @@ Route::post('login', [AuthManager::class, "loginPost"])->name('login.post');
 Route::get('register', [AuthManager::class, 'register'])->name('register');
 Route::post('register', [AuthManager::class, 'registerPost'])->name('register.post');
 
-// 🔒 Authenticated Routes
+
 Route::middleware("auth")->group(function () {
 
-    // 📋 Task Dashboard
+    
     Route::get('/dashboard', [TaskManager::class, "listTask"])->name('dashboard');
 
     // ➕ Create Task
@@ -28,11 +29,9 @@ Route::middleware("auth")->group(function () {
     // ✅ Update Task Status
     Route::get('task/status/{id}', [TaskManager::class, 'updateTaskstatus'])->name('task.status.update');
 
-    // 🔍 View Task & Suggestions
+   
     Route::get('/tasks/{task}', [TaskManager::class, 'show'])->name('task.show');
 
-    // 💬 Add Suggestion to a Task
-    Route::post('/tasks/{task}/suggestions', [TaskManager::class, 'addSuggestion'])->name('suggestion.add');
     // ✏️ Edit Task
 Route::get('task/edit/{task}', [TaskManager::class, 'editTask'])->name('task.edit');
 Route::put('/tasks/update/{task}', [TaskManager::class, 'updateTask'])->name('task.update');
@@ -42,6 +41,7 @@ Route::put('/tasks/update/{task}', [TaskManager::class, 'updateTask'])->name('ta
 Route::delete('/tasks/{task}', [TaskManager::class, 'deleteTask'])->name('task.delete');
 
 Route::get('/dashboard', [TaskManager::class, 'listTask'])->name('dashboard');
-
+Route::patch('/tasks/{id}/toggle-status', [TaskManager::class, 'toggleStatus'])->name('task.toggleStatus');
+Route::post('/logout', [AuthManager::class, 'destroy'])->name('logout');
 
 });
